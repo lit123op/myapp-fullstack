@@ -1,0 +1,15 @@
+# ---- .NET ----
+AppWebApi/**/bin/
+AppWebApi/**/obj/
+AppWebApi/**/.vs/
+AppWebApi/**/appsettings.Development.json
+*.user
+*.suo
+
+# ---- Environment / Secrets ----
+.env
+*.env
+
+# ---- OS files ----
+.DS_Store
+Thumbs.db

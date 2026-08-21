@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="dockerfile" />
+  </Folder>
+  <Project Path="Application/Application.csproj" Id="53dc78c9-c78e-4f44-8930-b455ca099282" />
+  <Project Path="AppWebApi/AppWebApi.csproj" />
+  <Project Path="Domain/Domain.csproj" Id="08a548f2-70fd-4652-a120-35fea4b5bc0b" />
+  <Project Path="Infrastructure/Infrastructure.csproj" Id="ae40e369-8a45-40c7-9f3a-cb6fb29302dd" />
+</Solution>

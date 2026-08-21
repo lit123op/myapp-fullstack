@@ -1,0 +1,80 @@
+<div class="container mt-4">
+  <h1 class="mb-4">Inventory</h1>
+
+  <!-- Form Section -->
+  <form class="row g-3 mb-4" (ngSubmit)="onsubmit()" novalidate>
+    
+    <div class="col-auto">
+      <select class="form-select" [(ngModel)]="inventoryData.productName" name="productName" >
+        <option selected disabled>ProductName</option>
+        <option value="Cherry">cherry</option>
+        <option value="Apple">Apple</option>
+        <option value="ORANGE">ORANGE</option>
+      </select>
+    </div>
+    <div class="col-auto">
+      <input type="number" class="form-control" placeholder="0" [(ngModel)]="inventoryData.availableQty" name="availableQty" />
+    </div>
+    <div class="col-auto">
+      <input type="number" class="form-control" placeholder="0" [(ngModel)]="inventoryData.reorderPoint" name="reorderPoint"/>
+    </div>
+    <div class="col-12">
+      <button type="submit" class="btn btn-primary" >Submit</button>
+    </div>
+  </form>
+
+  <!-- Table Section -->
+  <h3 class="mb-3">Inventory Details</h3>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>productName</th>
+        <th>availableQty</th>
+        <th>Reorder Point</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of inventoryList; track item.id; let i = $index) {
+        <tr>
+          <td>{{ item.productName }}</td>
+          <td>{{ item.availableQty }}</td>
+          <td>{{ item.reorderPoint }}</td>
+          <td>
+            <button class="btn btn-primary btn-sm me-1" data-bs-toggle="modal" data-bs-target="#editModal" (click)="onEdit(item)">Edit</button>
+            <button class="btn btn-danger btn-sm" (click)="onDelete(item)">Delete</button>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  <!---edit modal--->
+  <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+         <div clas="d-flex justify-content-center w-100">
+          <h5 class="modal-title" id="editModalLabel">Edit Inventory</h5>
+         </div>
+        </div>
+        <div class="modal-body">
+          <form (ngSubmit)="onUpdate()" novalidate>
+            <div class="mb-3">
+              <label for="productName" class="form-label">Product Name</label>
+              <input type="text" class="form-control" id="productName" [(ngModel)]="editData.productName" name="productName" required />
+            </div>
+            <div class="mb-3">
+              <label for="availableQty" class="form-label">Available Quantity</label>
+              <input type="number" class="form-control" id="availableQty" [(ngModel)]="editData.availableQty" name="availableQty" required />
+            </div>
+            <div class="mb-3">
+              <label for="reorderPoint" class="form-label">Reorder Point</label>
+              <input type="number" class="form-control" id="reorderPoint" [(ngModel)]="editData.reorderPoint" name="reorderPoint" required />
+            </div>
+            <div class="d-flex justify-content-center">
+              <button type="submit" class="btn btn-primary">Update</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
