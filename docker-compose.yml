@@ -18,20 +18,21 @@ services:
   backend:
     build:
       context: ./AppWebApi
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     ports:
       - "5000:8080"
     depends_on:
       db:
         condition: service_healthy
     environment:
+      - DOTNET_hostBuilder__reloadConfigOnChange=false
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Defaultconnection=Host=db;Port=5432;Database=App;Username=postgres;Password=YourStrong@Passw0rd;
 
   frontend:
     build:
       context: ./App
-      dockerfile: Dockerfile
+      dockerfile: dockerfile
     ports:
       - "4200:80"
     depends_on:
