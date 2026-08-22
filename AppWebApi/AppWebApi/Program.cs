@@ -7,11 +7,23 @@ var builder = WebApplication.CreateBuilder(new WebApplicationOptions
     Args = args
 });
 
+// Manually load config without file-watching (reloadOnChange: false)
+// para maiwasan ang "inotify limit reached" crash sa restricted containers
+// tulad ng Render free tier (limitado ang bilang ng file watchers doon)
 builder.Configuration.Sources.Clear();
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
     .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false)
     .AddEnvironmentVariables();
+
+// Bind sa "PORT" environment variable na awtomatikong ibinibigay ni Render
+// (nagbabago-bago ang value, hindi natin ito kinokontrol).
+// "0.0.0.0" ay nagsasabing makinig sa LAHAT ng network interfaces sa loob
+// ng container, hindi lang sa "localhost" (na naka-restrict lang sa loob).
+// Kailangan ito dahil naghahanap si Render ng bukas na port sa 0.0.0.0
+// para makumpirmang tumatakbo na ang service.
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 
 //install Swashbuckle.AspNetCore to enable swagger for api testing 
 // Add services to the container.
