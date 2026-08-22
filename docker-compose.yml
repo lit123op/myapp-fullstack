@@ -3,7 +3,7 @@ services:
     image: postgres:16-alpine
     environment:
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=YourStrong@Passw0rd
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=App
     ports:
       - "5432:5432"
@@ -24,10 +24,18 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
       - DOTNET_hostBuilder__reloadConfigOnChange=false
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__Defaultconnection=Host=db;Port=5432;Database=App;Username=postgres;Password=YourStrong@Passw0rd;
+      - ConnectionStrings__Defaultconnection=${DB_CONNECTION}
+      - JwtSettings__Secret=${JWT_SECRET}
+      - Stripe__ApiKey=${STRIPE_API_KEY}
+      - Stripe__WebhookSecret=${STRIPE_WEBHOOK_SECRET}
+      - Xendit__ApiKey=${XENDIT_API_KEY}
+      - Lalamove__ApiKey=${LALAMOVE_API_KEY}
+      - Lalamove__ApiSecret=${LALAMOVE_API_SECRET}
 
   frontend:
     build:
