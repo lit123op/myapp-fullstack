@@ -1,13 +1,19 @@
 services:
   db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: postgres:16-alpine
     environment:
-      - ACCEPT_EULA=Y
-      - MSSQL_SA_PASSWORD=YourStrong@Passw0rd
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=YourStrong@Passw0rd
+      - POSTGRES_DB=App
     ports:
-      - "1433:1433"
+      - "5432:5432"
     volumes:
-      - db_data:/var/opt/mssql
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   backend:
     build:
@@ -16,10 +22,11 @@ services:
     ports:
       - "5000:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__Defaultconnection=Server=db;Database=App;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
+      - ConnectionStrings__Defaultconnection=Host=db;Port=5432;Database=App;Username=postgres;Password=YourStrong@Passw0rd;
 
   frontend:
     build:

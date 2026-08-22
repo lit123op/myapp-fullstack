@@ -11,7 +11,7 @@ namespace Infrastructure.DependencyInjection
         public static IServiceCollection AddInfrastructure(this IServiceCollection services,IConfiguration config) 
         {
             services.AddDbContext<AppDbContext>(options =>
-            options.UseSqlServer(
+            options.UseNpgsql(
             config.GetConnectionString("Defaultconnection"),
             b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)),
             ServiceLifetime.Scoped
