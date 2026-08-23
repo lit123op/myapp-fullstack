@@ -37,7 +37,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 //cors
-var Angularhttp = "http://localhost:4200";
+var allowedOrigins = new[] { "http://localhost:4200", "https://myapp-frontend-hr5r.onrender.com" };
 //var Angularhttps = "https://localhost:4200";
 
 builder.Services.AddCors(options=>
@@ -45,7 +45,7 @@ builder.Services.AddCors(options=>
     options.AddPolicy("Angular", policy =>
        {
            policy
-                 .WithOrigins(Angularhttp)
+                 .WithOrigins(allowedOrigins)
                  .AllowAnyHeader()
                  .AllowAnyMethod();
                

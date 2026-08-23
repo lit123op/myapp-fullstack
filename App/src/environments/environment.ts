@@ -1,5 +1,5 @@
-//for deployment
+// src/environments/environment.ts
 export const environment = {
   production: true,
-  apiUrl: 'https://your-production-domain.com/api' // babaguhin mo kapag naka-deploy ka na
+  apiUrl: 'https://myapp-backend-xmpq.onrender.com/api'
 };

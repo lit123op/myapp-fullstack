@@ -1,4 +1,4 @@
-// src/environments/environment.ts
+// src/environments/environment.development.ts
 //for development
 export const environment = {
   production: false,
