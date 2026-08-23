@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../environments/environment.development';
+//if development use environment.development.ts and for production use environment.ts
+import { environment } from '../../environments/environment';
 import { Inventorydto,CreateInventoryRequest, UpdateInventoryRequest } from '../model/Inventorydto';
 import { ApiResponse, Response } from '../model/Api-Responsedto';
 
