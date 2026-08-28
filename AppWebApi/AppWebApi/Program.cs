@@ -60,6 +60,7 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 // Configure the HTTP request pipeline.
+//para lumabas ang swagger ui sa development mode lang, hindi sa production
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
