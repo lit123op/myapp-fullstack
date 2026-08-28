@@ -37,7 +37,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 //cors
-var allowedOrigins = new[] { "http://localhost:4200", "https://myapp-frontend-hr5r.onrender.com" };
+var allowedOrigins = new[] { "http://localhost:4200",
+ "https://myapp-frontend-hr5r.onrender.com",
+ "https://myapp-frontend-staging.onrender.com" };
 //var Angularhttps = "https://localhost:4200";
 
 builder.Services.AddCors(options=>
