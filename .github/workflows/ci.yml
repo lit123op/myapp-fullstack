@@ -24,3 +24,23 @@ jobs:
 
       - name: Build frontend Docker image
         run: docker build -t myapp-frontend ./App
+
+  deploy-staging:
+    needs: [build-backend, build-frontend]
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render staging deploys
+        run: |
+          curl -X POST "${{ secrets.RENDER_BACKEND_STAGING_HOOK }}"
+          curl -X POST "${{ secrets.RENDER_FRONTEND_STAGING_HOOK }}"
+
+  deploy-production:
+    needs: [build-backend, build-frontend]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render production deploys
+        run: |
+          curl -X POST "${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}"
+          curl -X POST "${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}"
