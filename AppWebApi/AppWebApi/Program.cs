@@ -37,7 +37,9 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 //cors
-var allowedOrigins = new[] { "http://localhost:4200", "https://myapp-frontend-hr5r.onrender.com" };
+var allowedOrigins = new[] { "http://localhost:4200",
+ "https://myapp-frontend-hr5r.onrender.com",
+ "https://myapp-frontend-staging.onrender.com" };
 //var Angularhttps = "https://localhost:4200";
 
 builder.Services.AddCors(options=>
@@ -60,6 +62,7 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate();
 }
 // Configure the HTTP request pipeline.
+//para lumabas ang swagger ui sa development mode lang, hindi sa production
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

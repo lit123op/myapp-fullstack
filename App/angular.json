@@ -43,6 +43,15 @@
               ],
               "outputHashing": "all"
             },
+            "staging": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.staging.ts"
+                }
+              ],
+              "outputHashing": "all"
+            },
             "development": {
               "optimization": false,
               "extractLicenses": false,
@@ -62,6 +71,9 @@
           "configurations": {
             "production": {
               "buildTarget": "App:build:production"
+            },
+            "staging": {
+              "buildTarget": "App:build:staging"
             },
             "development": {
               "buildTarget": "App:build:development"
