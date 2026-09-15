@@ -10,6 +10,17 @@ AppWebApi/**/appsettings.Development.json
 .env
 *.env
 
+# ---- Terraform ----
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfvars
+terraform/*.tfstate
+terraform/*.tfstate.*
+terraform/*.tfstate.backup
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
 # ---- OS files ----
 .DS_Store
 Thumbs.db

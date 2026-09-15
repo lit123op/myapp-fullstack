@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['tf-cadvisor:8080']
+
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['tf-postgres-exporter:9187']
+
+  - job_name: 'node'
+    static_configs:
+      - targets: ['tf-node-exporter:9100']
