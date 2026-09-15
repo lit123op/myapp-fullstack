@@ -29,6 +29,7 @@ jobs:
     needs: [build-backend, build-frontend]
     if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
     runs-on: ubuntu-latest
+    environment: staging
     steps:
       - name: Trigger Render staging deploys
         run: |
@@ -39,6 +40,7 @@ jobs:
     needs: [build-backend, build-frontend]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: Trigger Render production deploys
         run: |
