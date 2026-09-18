@@ -5,12 +5,7 @@
   <form class="row g-3 mb-4" (ngSubmit)="onsubmit()" novalidate>
     
     <div class="col-auto">
-      <select class="form-select" [(ngModel)]="inventoryData.productName" name="productName" >
-        <option selected disabled>ProductName</option>
-        <option value="Cherry">cherry</option>
-        <option value="Apple">Apple</option>
-        <option value="ORANGE">ORANGE</option>
-      </select>
+      <input type="text" class="form-control" placeholder="Product Name" [(ngModel)]="inventoryData.productName" name="productName" />
     </div>
     <div class="col-auto">
       <input type="number" class="form-control" placeholder="0" [(ngModel)]="inventoryData.availableQty" name="availableQty" />

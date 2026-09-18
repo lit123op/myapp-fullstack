@@ -10,7 +10,7 @@ import { ApiResponse, Response } from '../model/Api-Responsedto';
   providedIn: 'root',
 })
 export class InventoryService {
-  private apiUrl = `${environment.apiUrl}/inventory`;
+  private apiUrl = `${environment.apiUrl}/Inventory`;
 
   constructor(private http: HttpClient) {}
 
