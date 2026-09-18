@@ -70,7 +70,7 @@ namespace Infrastructure.Implementation
         // read lang), ligtas itong ipasa sa read-only database.
         public async Task<ApiResponse<IEnumerable<Inventorydto>>> GetAllInventoryAsync()
         {
-            var inventory = await readContext.Inventory.ToListAsync();
+            var inventory = await context.Inventory.ToListAsync();
             if (inventory.Any())
             {
                 var inventoryDtos = inventory.Select(i => new Inventorydto
