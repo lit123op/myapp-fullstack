@@ -30,6 +30,7 @@ services:
       - DOTNET_hostBuilder__reloadConfigOnChange=false
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__Defaultconnection=${DB_CONNECTION}
+      - ConnectionStrings__ReadOnlyConnection=${READ_ONLY_DB_CONNECTION}
       - JwtSettings__Secret=${JWT_SECRET}
       - Stripe__ApiKey=${STRIPE_API_KEY}
       - Stripe__WebhookSecret=${STRIPE_WEBHOOK_SECRET}
