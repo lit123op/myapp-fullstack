@@ -30,17 +30,23 @@ builder.WebHost.UseUrls($"http://0.0.0.0:{port}");
 builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddControllers();
+builder.Services.AddHealthChecks();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddEndpointsApiExplorer();
 //install Swashbuckle.AspNetCore to enable swagger for api testing 
 //add "launchUrl": "swagger", sa launchSettings.json to open swagger page on start
 builder.Services.AddSwaggerGen();
 
-//cors
-var allowedOrigins = new[] { "http://localhost:4200",
- "https://myapp-frontend-hr5r.onrender.com",
- "https://myapp-frontend-staging.onrender.com" };
-//var Angularhttps = "https://localhost:4200";
+var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>();
+if (allowedOrigins is null || allowedOrigins.Length == 0)
+{
+    allowedOrigins = new[]
+    {
+        "http://localhost:4200",
+        "https://myapp-frontend-hr5r.onrender.com",
+        "https://myapp-frontend-staging.onrender.com"
+    };
+}
 
 builder.Services.AddCors(options=>
 {
@@ -55,11 +61,23 @@ builder.Services.AddCors(options=>
 
 });
 var app = builder.Build();
-// Auto-apply pending EF Core migrations on startup
+// Serialize migrations across replicas; PostgreSQL releases this session lock
+// automatically if the process exits before reaching the unlock call.
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    db.Database.SetCommandTimeout(TimeSpan.FromMinutes(5));
+    db.Database.OpenConnection();
+    try
+    {
+        db.Database.ExecuteSqlRaw("SELECT pg_advisory_lock(74239102)");
+        db.Database.Migrate();
+        db.Database.ExecuteSqlRaw("SELECT pg_advisory_unlock(74239102)");
+    }
+    finally
+    {
+        db.Database.CloseConnection();
+    }
 }
 // Configure the HTTP request pipeline.
 //para lumabas ang swagger ui sa development mode lang, hindi sa production
@@ -77,5 +95,6 @@ app.UseCors("Angular");
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 app.Run();

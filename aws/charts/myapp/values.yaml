@@ -1,0 +1,34 @@
+backend:
+  image:
+    repository: ""
+    tag: ""
+  replicas: 3
+  db:
+    writerHost: ""
+    readerHost: ""
+    name: App
+    secretName: myapp-db-credentials
+  appSecretName: myapp-app-credentials
+  corsAllowedOrigins: []
+  autoscaling:
+    enabled: true
+    minReplicas: 3
+    maxReplicas: 8
+    targetCPUUtilizationPercentage: 70
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 768Mi
+
+frontend:
+  image:
+    repository: ""
+    tag: ""
+  replicas: 2
+
+ingress:
+  host: ""
+  certificateArn: ""

@@ -70,21 +70,28 @@ namespace Infrastructure.Implementation
         // read lang), ligtas itong ipasa sa read-only database.
         public async Task<ApiResponse<IEnumerable<Inventorydto>>> GetAllInventoryAsync()
         {
-            var inventory = await context.Inventory.ToListAsync();
-            if (inventory.Any())
+            try
             {
-                var inventoryDtos = inventory.Select(i => new Inventorydto
+                var inventory = await readContext.Inventory.ToListAsync();
+                if (inventory.Any())
                 {
-                    Id = i.Id,
-                    ProductName = i.ProductName,
-                    AvailableQty = i.AvailableQty,
-                    ReorderPoint = i.ReorderPoint
-                }).ToList();
-                return new ApiResponse<IEnumerable<Inventorydto>>(true, "fetched successfully", inventoryDtos);
+                    var inventoryDtos = inventory.Select(i => new Inventorydto
+                    {
+                        Id = i.Id,
+                        ProductName = i.ProductName,
+                        AvailableQty = i.AvailableQty,
+                        ReorderPoint = i.ReorderPoint
+                    }).ToList();
+                    return new ApiResponse<IEnumerable<Inventorydto>>(true, "fetched successfully", inventoryDtos);
+                }
+                else
+                {
+                    return new ApiResponse<IEnumerable<Inventorydto>>(false, "No Inventory Found", null);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                return new ApiResponse<IEnumerable<Inventorydto>>(false, "No Inventory Found", null);
+                return new ApiResponse<IEnumerable<Inventorydto>>(false, ex.Message, null);
             }
         }
 

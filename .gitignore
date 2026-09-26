@@ -1,26 +1,36 @@
-# ---- .NET ----
+# .NET build and IDE output
 AppWebApi/**/bin/
 AppWebApi/**/obj/
 AppWebApi/**/.vs/
-AppWebApi/**/appsettings.Development.json
 *.user
 *.suo
 
-# ---- Environment / Secrets ----
-.env
-*.env
+# Angular build output
+App/node_modules/
+App/dist/
+App/.angular/
+App/out-tsc/
+App/coverage/
+App/*.log
 
-# ---- Terraform ----
-terraform/.terraform/
-terraform/.terraform.lock.hcl
-terraform/terraform.tfvars
-terraform/*.tfstate
-terraform/*.tfstate.*
-terraform/*.tfstate.backup
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+**/appsettings.*.json
+!**/appsettings.json
+*.dump
+
+# Generated local Kubernetes mirror
+myapp-eks-mirror/
+*.kubeconfig
+kubeconfig
+
+# Terraform state, caches, and secret variable files
+**/.terraform/
 *.tfstate
 *.tfstate.*
 *.tfstate.backup
-
-# ---- OS files ----
-.DS_Store
-Thumbs.db
+*.tfvars
+!*.example.tfvars
+aws/backend.hcl
