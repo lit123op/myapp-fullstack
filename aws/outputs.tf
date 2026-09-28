@@ -43,7 +43,7 @@ output "db_name" {
 }
 
 output "db_secret_arn" {
-  value = aws_db_instance.primary.master_user_secret[0].secret_arn
+  value = aws_secretsmanager_secret.db.arn
 }
 
 output "app_secret_arn" {

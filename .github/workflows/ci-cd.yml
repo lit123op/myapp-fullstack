@@ -1,4 +1,4 @@
-name: CI - Build Check
+name: CI - Build Check & Staging Deploy (Render)
 
 on:
   push:
@@ -35,14 +35,3 @@ jobs:
         run: |
           curl -X POST "${{ secrets.RENDER_BACKEND_STAGING_HOOK }}"
           curl -X POST "${{ secrets.RENDER_FRONTEND_STAGING_HOOK }}"
-
-  deploy-production:
-    needs: [build-backend, build-frontend]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - name: Trigger Render production deploys
-        run: |
-          curl -X POST "${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}"
-          curl -X POST "${{ secrets.RENDER_FRONTEND_DEPLOY_HOOK }}"
