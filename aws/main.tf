@@ -113,6 +113,12 @@ resource "aws_db_subnet_group" "database" {
   tags       = local.tags
 }
 
+resource "random_password" "db_master" {
+  length           = 20
+  special          = true
+  override_special = "!#$%&*()-_=+"
+}
+
 resource "aws_db_instance" "primary" {
   identifier                      = "${local.name}-postgres"
   engine                          = "postgres"
@@ -123,12 +129,12 @@ resource "aws_db_instance" "primary" {
   storage_encrypted               = true
   db_name                         = var.db_name
   username                        = var.db_username
-  manage_master_user_password     = true
+  password                        = random_password.db_master.result
   db_subnet_group_name            = aws_db_subnet_group.database.name
   vpc_security_group_ids          = [aws_security_group.database.id]
-  multi_az                        = true
+  multi_az                        = false
   publicly_accessible             = false
-  backup_retention_period         = 7
+  backup_retention_period         = 1
   auto_minor_version_upgrade      = true
   deletion_protection             = true
   copy_tags_to_snapshot           = true
@@ -142,6 +148,7 @@ resource "aws_db_instance" "primary" {
 resource "aws_db_instance" "read_replica" {
   identifier                 = "${local.name}-postgres-read"
   replicate_source_db        = aws_db_instance.primary.identifier
+  storage_encrypted          = true
   instance_class             = var.db_instance_class
   publicly_accessible        = false
   auto_minor_version_upgrade = true
@@ -150,6 +157,21 @@ resource "aws_db_instance" "read_replica" {
   vpc_security_group_ids     = [aws_security_group.database.id]
 
   tags = local.tags
+}
+
+resource "aws_secretsmanager_secret" "db" {
+  name                    = "${local.name}/database"
+  description             = "RDS PostgreSQL master credentials."
+  recovery_window_in_days = 0
+  tags                    = local.tags
+}
+
+resource "aws_secretsmanager_secret_version" "db" {
+  secret_id = aws_secretsmanager_secret.db.id
+  secret_string = jsonencode({
+    username = var.db_username
+    password = random_password.db_master.result
+  })
 }
 
 resource "aws_secretsmanager_secret" "app" {
@@ -185,7 +207,10 @@ data "aws_iam_policy_document" "github_assume_role" {
     condition {
       test     = "StringEquals"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_repository}:environment:${var.github_environment}"]
+      values = [
+        for environment in var.github_environments :
+        "repo:${var.github_repository}:environment:${environment}"
+      ]
     }
   }
 }
@@ -227,7 +252,7 @@ resource "aws_iam_role_policy" "github_deploy" {
       {
         Effect   = "Allow"
         Action   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
-        Resource = [aws_db_instance.primary.master_user_secret[0].secret_arn, aws_secretsmanager_secret.app.arn]
+        Resource = [aws_secretsmanager_secret.db.arn, aws_secretsmanager_secret.app.arn]
       }
     ]
   })
@@ -243,7 +268,7 @@ module "eks" {
   subnet_ids      = module.vpc.private_subnets
 
   cluster_endpoint_private_access          = true
-  cluster_endpoint_public_access           = false
+  cluster_endpoint_public_access           = true
   enable_irsa                              = true
   enable_cluster_creator_admin_permissions = true
 
@@ -252,7 +277,9 @@ module "eks" {
     eks-pod-identity-agent = {}
     kube-proxy             = {}
     vpc-cni                = {}
-    aws-ebs-csi-driver     = {}
+    aws-ebs-csi-driver = {
+      service_account_role_arn = module.ebs_csi_irsa_role.iam_role_arn
+    }
   }
 
   eks_managed_node_groups = {
@@ -293,6 +320,22 @@ module "aws_load_balancer_controller_role" {
     main = {
       provider_arn               = module.eks.oidc_provider_arn
       namespace_service_accounts = ["kube-system:aws-load-balancer-controller"]
+    }
+  }
+
+  tags = local.tags
+}
+
+module "ebs_csi_irsa_role" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "5.58.0"
+
+  role_name             = "${local.name}-ebs-csi-driver"
+  attach_ebs_csi_policy = true
+  oidc_providers = {
+    main = {
+      provider_arn               = module.eks.oidc_provider_arn
+      namespace_service_accounts = ["kube-system:ebs-csi-controller-sa"]
     }
   }
 

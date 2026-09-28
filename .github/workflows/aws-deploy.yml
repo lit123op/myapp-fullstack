@@ -14,10 +14,11 @@ concurrency:
 jobs:
   deploy:
     name: Build and deploy approved AWS release
-    runs-on: [self-hosted, linux, aws-vpc]
-    environment: aws-production
+    runs-on: ubuntu-latest
+    environment: production
     env:
       AWS_REGION: ${{ vars.AWS_REGION }}
+      AWS_DEPLOY_ROLE_ARN: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
       EKS_CLUSTER_NAME: ${{ vars.EKS_CLUSTER_NAME }}
       AWS_VPC_ID: ${{ vars.AWS_VPC_ID }}
       BACKEND_ECR_REPOSITORY: ${{ vars.BACKEND_ECR_REPOSITORY }}
@@ -30,6 +31,7 @@ jobs:
       APP_HOST: ${{ vars.APP_HOST }}
       ACM_CERTIFICATE_ARN: ${{ vars.ACM_CERTIFICATE_ARN }}
       AWS_LBC_CHART_VERSION: ${{ vars.AWS_LBC_CHART_VERSION }}
+      METRICS_SERVER_CHART_VERSION: ${{ vars.METRICS_SERVER_CHART_VERSION }}
     steps:
       - uses: actions/checkout@v4
 
@@ -61,11 +63,12 @@ jobs:
       - name: Build and push immutable images
         env:
           IMAGE_TAG: sha-${{ github.sha }}
+          BUILD_CONFIG: production
         shell: bash
         run: |
           set -Eeuo pipefail
           docker build --pull -f AppWebApi/dockerfile -t "${BACKEND_ECR_REPOSITORY}:${IMAGE_TAG}" ./AppWebApi
-          docker build --pull --build-arg BUILD_CONFIG=production --build-arg NGINX_CONFIG=nginx.conf \
+          docker build --pull --build-arg BUILD_CONFIG="$BUILD_CONFIG" --build-arg NGINX_CONFIG=nginx.conf \
             -f App/dockerfile -t "${FRONTEND_ECR_REPOSITORY}:${IMAGE_TAG}" ./App
           docker push "${BACKEND_ECR_REPOSITORY}:${IMAGE_TAG}"
           docker push "${FRONTEND_ECR_REPOSITORY}:${IMAGE_TAG}"

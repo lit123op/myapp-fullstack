@@ -20,10 +20,10 @@ variable "github_repository" {
   }
 }
 
-variable "github_environment" {
-  description = "Protected GitHub Environment required to assume the deployment role."
-  type        = string
-  default     = "aws-production"
+variable "github_environments" {
+  description = "GitHub Environments allowed to assume the deployment role."
+  type        = set(string)
+  default     = ["production"]
 }
 
 variable "cluster_version" {
@@ -35,7 +35,7 @@ variable "cluster_version" {
 variable "node_instance_types" {
   description = "EC2 instance types for the EKS managed node group."
   type        = list(string)
-  default     = ["t3.medium"]
+  default     = ["t3.small"]
 }
 
 variable "node_min_size" {
@@ -56,7 +56,7 @@ variable "node_max_size" {
 variable "db_instance_class" {
   description = "Instance class for both the Multi-AZ writer and the read replica. Review AWS costs before applying."
   type        = string
-  default     = "db.t4g.medium"
+  default     = "db.t4g.micro"
 }
 
 variable "db_allocated_storage_gb" {
