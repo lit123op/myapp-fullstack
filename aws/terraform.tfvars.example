@@ -1,5 +1,7 @@
 aws_region        = "ap-southeast-1"
 project_name      = "myapp"
 github_repository = "YOUR_GITHUB_OWNER/YOUR_REPOSITORY"
+github_owner_id       = "YOUR_GITHUB_OWNER_ID"
+github_repository_id  = "YOUR_GITHUB_REPOSITORY_ID"
 github_environments = ["production"]
 cluster_version   = "1.35"
