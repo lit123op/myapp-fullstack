@@ -37,9 +37,9 @@ spec:
                   name: {{ .Values.backend.db.secretName }}
                   key: password
             - name: ConnectionStrings__DefaultConnection
-              value: "Host={{ .Values.backend.db.writerHost }};Port=5432;Database={{ .Values.backend.db.name }};Username=$(DB_USERNAME);Password=$(DB_PASSWORD);SSL Mode=VerifyFull;Root Certificate=/etc/ssl/certs/rds/global-bundle.pem"
+              value: "Host={{ .Values.backend.db.writerHost }};Port=5432;Database={{ .Values.backend.db.name }};Username=$(DB_USERNAME);Password=$(DB_PASSWORD);SSL Mode=VerifyFull;Root Certificate=/etc/ssl/certs/rds/rds-ca.pem"
             - name: ConnectionStrings__ReadOnlyConnection
-              value: "Host={{ .Values.backend.db.readerHost }};Port=5432;Database={{ .Values.backend.db.name }};Username=$(DB_USERNAME);Password=$(DB_PASSWORD);SSL Mode=VerifyFull;Root Certificate=/etc/ssl/certs/rds/global-bundle.pem"
+              value: "Host={{ .Values.backend.db.readerHost }};Port=5432;Database={{ .Values.backend.db.name }};Username=$(DB_USERNAME);Password=$(DB_PASSWORD);SSL Mode=VerifyFull;Root Certificate=/etc/ssl/certs/rds/rds-ca.pem"
             - name: JwtSettings__Secret
               valueFrom:
                 secretKeyRef:
@@ -97,8 +97,8 @@ spec:
           configMap:
             name: aws-rds-ca
             items:
-              - key: global-bundle.pem
-                path: global-bundle.pem
+              - key: rds-ca.pem
+                path: rds-ca.pem
 ---
 apiVersion: v1
 kind: Service

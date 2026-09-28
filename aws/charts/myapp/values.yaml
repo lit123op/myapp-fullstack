@@ -2,7 +2,7 @@ backend:
   image:
     repository: ""
     tag: ""
-  replicas: 3
+  replicas: 1
   db:
     writerHost: ""
     readerHost: ""
@@ -12,8 +12,8 @@ backend:
   corsAllowedOrigins: []
   autoscaling:
     enabled: true
-    minReplicas: 3
-    maxReplicas: 8
+    minReplicas: 1
+    maxReplicas: 2
     targetCPUUtilizationPercentage: 70
   resources:
     requests:
@@ -27,7 +27,7 @@ frontend:
   image:
     repository: ""
     tag: ""
-  replicas: 2
+  replicas: 1
 
 ingress:
   host: ""
