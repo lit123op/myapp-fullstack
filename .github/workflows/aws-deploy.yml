@@ -62,7 +62,7 @@ jobs:
 
       - name: Build and push immutable images
         env:
-          IMAGE_TAG: sha-${{ github.sha }}
+          IMAGE_TAG: sha-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
           BUILD_CONFIG: production
         shell: bash
         run: |

@@ -20,6 +20,26 @@ variable "github_repository" {
   }
 }
 
+variable "github_owner_id" {
+  description = "Immutable numeric GitHub owner ID used in the OIDC subject claim."
+  type        = string
+
+  validation {
+    condition     = can(regex("^[0-9]+$", var.github_owner_id))
+    error_message = "Set github_owner_id to the numeric GitHub owner ID."
+  }
+}
+
+variable "github_repository_id" {
+  description = "Immutable numeric GitHub repository ID used in the OIDC subject claim."
+  type        = string
+
+  validation {
+    condition     = can(regex("^[0-9]+$", var.github_repository_id))
+    error_message = "Set github_repository_id to the numeric GitHub repository ID."
+  }
+}
+
 variable "github_environments" {
   description = "GitHub Environments allowed to assume the deployment role."
   type        = set(string)
