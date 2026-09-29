@@ -20,18 +20,12 @@ jobs:
       AWS_REGION: ${{ vars.AWS_REGION }}
       AWS_DEPLOY_ROLE_ARN: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
       EKS_CLUSTER_NAME: ${{ vars.EKS_CLUSTER_NAME }}
-      AWS_VPC_ID: ${{ vars.AWS_VPC_ID }}
       BACKEND_ECR_REPOSITORY: ${{ vars.BACKEND_ECR_REPOSITORY }}
       FRONTEND_ECR_REPOSITORY: ${{ vars.FRONTEND_ECR_REPOSITORY }}
-      AWS_LBC_ROLE_ARN: ${{ vars.AWS_LBC_ROLE_ARN }}
       DB_WRITER_HOST: ${{ vars.DB_WRITER_HOST }}
       DB_READER_HOST: ${{ vars.DB_READER_HOST }}
-      DB_SECRET_ARN: ${{ vars.DB_SECRET_ARN }}
-      APP_SECRET_ARN: ${{ vars.APP_SECRET_ARN }}
       APP_HOST: ${{ vars.APP_HOST }}
       ACM_CERTIFICATE_ARN: ${{ vars.ACM_CERTIFICATE_ARN }}
-      AWS_LBC_CHART_VERSION: ${{ vars.AWS_LBC_CHART_VERSION }}
-      METRICS_SERVER_CHART_VERSION: ${{ vars.METRICS_SERVER_CHART_VERSION }}
     steps:
       - uses: actions/checkout@v4
 
@@ -39,10 +33,9 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          for name in AWS_REGION AWS_DEPLOY_ROLE_ARN EKS_CLUSTER_NAME AWS_VPC_ID \
-            BACKEND_ECR_REPOSITORY FRONTEND_ECR_REPOSITORY AWS_LBC_ROLE_ARN \
-            DB_WRITER_HOST DB_READER_HOST DB_SECRET_ARN APP_SECRET_ARN \
-            APP_HOST ACM_CERTIFICATE_ARN AWS_LBC_CHART_VERSION METRICS_SERVER_CHART_VERSION; do
+          for name in AWS_REGION AWS_DEPLOY_ROLE_ARN EKS_CLUSTER_NAME \
+            BACKEND_ECR_REPOSITORY FRONTEND_ECR_REPOSITORY \
+            DB_WRITER_HOST DB_READER_HOST APP_HOST ACM_CERTIFICATE_ARN; do
             if [[ -z "${!name}" ]]; then
               echo "Missing GitHub Environment variable: ${name}" >&2
               exit 1
@@ -83,70 +76,13 @@ jobs:
           aws eks update-kubeconfig --region "$AWS_REGION" --name "$EKS_CLUSTER_NAME"
           kubectl get nodes
 
-      - name: Install AWS Load Balancer Controller
+      - name: Wait for runtime secrets
         shell: bash
         run: |
           set -Eeuo pipefail
-          kubectl create serviceaccount aws-load-balancer-controller --namespace kube-system \
-            --dry-run=client -o yaml | kubectl apply -f -
-          kubectl annotate serviceaccount aws-load-balancer-controller --namespace kube-system \
-            "eks.amazonaws.com/role-arn=${AWS_LBC_ROLE_ARN}" --overwrite
-          helm repo add eks https://aws.github.io/eks-charts
-          helm repo update eks
-          helm upgrade --install aws-load-balancer-controller eks/aws-load-balancer-controller \
-            --namespace kube-system --version "$AWS_LBC_CHART_VERSION" \
-            --set clusterName="$EKS_CLUSTER_NAME" \
-            --set region="$AWS_REGION" \
-            --set vpcId="$AWS_VPC_ID" \
-            --set serviceAccount.create=false \
-            --set serviceAccount.name=aws-load-balancer-controller \
-            --wait --timeout 10m
-
-      - name: Install Metrics Server for HPA
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          helm repo add metrics-server https://kubernetes-sigs.github.io/metrics-server/
-          helm repo update metrics-server
-          helm upgrade --install metrics-server metrics-server/metrics-server \
-            --namespace kube-system --version "$METRICS_SERVER_CHART_VERSION" \
-            --wait --timeout 5m
-
-      - name: Sync runtime secrets from AWS Secrets Manager
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          namespace=myapp
-          kubectl create namespace "$namespace" --dry-run=client -o yaml | kubectl apply -f -
-          db_json="$(mktemp)"
-          app_json="$(mktemp)"
-          db_env="$(mktemp)"
-          app_env="$(mktemp)"
-          chmod 600 "$db_json" "$app_json" "$db_env" "$app_env"
-          trap 'rm -f "$db_json" "$app_json" "$db_env" "$app_env"' EXIT
-          aws secretsmanager get-secret-value --secret-id "$DB_SECRET_ARN" \
-            --query SecretString --output text > "$db_json"
-          aws secretsmanager get-secret-value --secret-id "$APP_SECRET_ARN" \
-            --query SecretString --output text > "$app_json"
-          jq -er '"username=\(.username)\npassword=\(.password)"' "$db_json" > "$db_env"
-          jq -er '"jwtSecret=\(.jwtSecret)\nstripeApiKey=\(.stripeApiKey)\nstripeWebhookSecret=\(.stripeWebhookSecret)\nxenditApiKey=\(.xenditApiKey)\nlalamoveApiKey=\(.lalamoveApiKey)\nlalamoveApiSecret=\(.lalamoveApiSecret)"' "$app_json" > "$app_env"
-          kubectl create secret generic myapp-db-credentials --namespace "$namespace" \
-            --from-env-file="$db_env" --dry-run=client -o yaml | kubectl apply -f -
-          kubectl create secret generic myapp-app-credentials --namespace "$namespace" \
-            --from-env-file="$app_env" --dry-run=client -o yaml | kubectl apply -f -
-
-      - name: Install the AWS RDS CA bundle
-        shell: bash
-        run: |
-          set -Eeuo pipefail
-          bundle="$(mktemp)"
-          trap 'rm -f "$bundle"' EXIT
-          curl --fail --silent --show-error --location \
-            "https://truststore.pki.rds.amazonaws.com/${AWS_REGION}/${AWS_REGION}-bundle.pem" \
-            --output "$bundle"
-          kubectl create configmap aws-rds-ca --namespace myapp \
-            --from-file=rds-ca.pem="$bundle" \
-            --dry-run=client -o yaml | kubectl apply -f -
+          kubectl wait --for=condition=Ready clustersecretstore/aws-secrets-manager --timeout=5m
+          kubectl wait --for=condition=Ready externalsecret/myapp-db-credentials --namespace myapp --timeout=5m
+          kubectl wait --for=condition=Ready externalsecret/myapp-app-credentials --namespace myapp --timeout=5m
 
       - name: Deploy application chart
         shell: bash

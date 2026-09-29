@@ -248,11 +248,6 @@ resource "aws_iam_role_policy" "github_deploy" {
         Effect   = "Allow"
         Action   = ["eks:DescribeCluster"]
         Resource = module.eks.cluster_arn
-      },
-      {
-        Effect   = "Allow"
-        Action   = ["secretsmanager:DescribeSecret", "secretsmanager:GetSecretValue"]
-        Resource = [aws_secretsmanager_secret.db.arn, aws_secretsmanager_secret.app.arn]
       }
     ]
   })
@@ -340,4 +335,36 @@ module "ebs_csi_irsa_role" {
   }
 
   tags = local.tags
+}
+
+module "external_secrets_role" {
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  version = "5.58.0"
+
+  role_name = "${local.name}-external-secrets"
+  oidc_providers = {
+    main = {
+      provider_arn               = module.eks.oidc_provider_arn
+      namespace_service_accounts = ["external-secrets:external-secrets"]
+    }
+  }
+
+  tags = local.tags
+}
+
+resource "aws_iam_role_policy" "external_secrets" {
+  name = "${local.name}-external-secrets"
+  role = module.external_secrets_role.iam_role_name
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "secretsmanager:DescribeSecret",
+        "secretsmanager:GetSecretValue"
+      ]
+      Resource = [aws_secretsmanager_secret.db.arn, aws_secretsmanager_secret.app.arn]
+    }]
+  })
 }

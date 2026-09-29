@@ -1,0 +1,6 @@
+apiVersion: v2
+name: cluster-runtime
+description: Runtime secrets and database CA configuration for the application namespace
+type: application
+version: 0.1.0
+appVersion: "1.0"

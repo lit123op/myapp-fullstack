@@ -1,0 +1,76 @@
+apiVersion: external-secrets.io/v1
+kind: ClusterSecretStore
+metadata:
+  name: aws-secrets-manager
+spec:
+  provider:
+    aws:
+      service: SecretsManager
+      region: {{ .Values.awsRegion | quote }}
+      auth:
+        jwt:
+          serviceAccountRef:
+            name: external-secrets
+            namespace: external-secrets
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: myapp-db-credentials
+  namespace: {{ .Release.Namespace }}
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: aws-secrets-manager
+    kind: ClusterSecretStore
+  target:
+    name: myapp-db-credentials
+    creationPolicy: CreateOrMerge
+  data:
+    - secretKey: username
+      remoteRef:
+        key: {{ .Values.dbSecretArn | quote }}
+        property: username
+    - secretKey: password
+      remoteRef:
+        key: {{ .Values.dbSecretArn | quote }}
+        property: password
+---
+apiVersion: external-secrets.io/v1
+kind: ExternalSecret
+metadata:
+  name: myapp-app-credentials
+  namespace: {{ .Release.Namespace }}
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: aws-secrets-manager
+    kind: ClusterSecretStore
+  target:
+    name: myapp-app-credentials
+    creationPolicy: CreateOrMerge
+  data:
+    - secretKey: jwtSecret
+      remoteRef:
+        key: {{ .Values.appSecretArn | quote }}
+        property: jwtSecret
+    - secretKey: stripeApiKey
+      remoteRef:
+        key: {{ .Values.appSecretArn | quote }}
+        property: stripeApiKey
+    - secretKey: stripeWebhookSecret
+      remoteRef:
+        key: {{ .Values.appSecretArn | quote }}
+        property: stripeWebhookSecret
+    - secretKey: xenditApiKey
+      remoteRef:
+        key: {{ .Values.appSecretArn | quote }}
+        property: xenditApiKey
+    - secretKey: lalamoveApiKey
+      remoteRef:
+        key: {{ .Values.appSecretArn | quote }}
+        property: lalamoveApiKey
+    - secretKey: lalamoveApiSecret
+      remoteRef:
+        key: {{ .Values.appSecretArn | quote }}
+        property: lalamoveApiSecret
