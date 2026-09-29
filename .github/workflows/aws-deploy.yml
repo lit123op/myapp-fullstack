@@ -140,36 +140,12 @@ jobs:
         run: |
           set -Eeuo pipefail
           bundle="$(mktemp)"
-          ca_bundle="$(mktemp)"
-          cert_dir="$(mktemp -d)"
-          trap 'rm -f "$bundle" "$ca_bundle"; rm -rf "$cert_dir"' EXIT
+          trap 'rm -f "$bundle"' EXIT
           curl --fail --silent --show-error --location \
             https://truststore.pki.rds.amazonaws.com/ap-southeast-1/ap-southeast-1-bundle.pem \
             --output "$bundle"
-          awk -v cert_dir="$cert_dir" '
-            /-----BEGIN CERTIFICATE-----/ {
-              count++
-              cert_file = sprintf("%s/cert-%03d.pem", cert_dir, count)
-            }
-            cert_file != "" { print > cert_file }
-            /-----END CERTIFICATE-----/ {
-              close(cert_file)
-              cert_file = ""
-            }
-          ' "$bundle"
-          for certificate in "$cert_dir"/*.pem; do
-            if openssl x509 -in "$certificate" -noout -subject -nameopt RFC2253 \
-              | grep -Fq 'Amazon RDS ap-southeast-1 Root CA RSA2048 G1'; then
-              cp "$certificate" "$ca_bundle"
-              break
-            fi
-          done
-          if [[ ! -s "$ca_bundle" ]]; then
-            echo "Could not find the configured RDS CA certificate in the regional bundle." >&2
-            exit 1
-          fi
           kubectl create configmap aws-rds-ca --namespace myapp \
-            --from-file=rds-ca.pem="$ca_bundle" \
+            --from-file=rds-ca.pem="$bundle" \
             --dry-run=client -o yaml | kubectl apply -f -
 
       - name: Deploy application chart
