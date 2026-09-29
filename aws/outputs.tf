@@ -10,6 +10,10 @@ output "cluster_endpoint" {
   value = module.eks.cluster_endpoint
 }
 
+output "cluster_certificate_authority_data" {
+  value = module.eks.cluster_certificate_authority_data
+}
+
 output "vpc_id" {
   value = module.vpc.vpc_id
 }
@@ -20,6 +24,10 @@ output "github_deploy_role_arn" {
 
 output "load_balancer_controller_role_arn" {
   value = module.aws_load_balancer_controller_role.iam_role_arn
+}
+
+output "external_secrets_role_arn" {
+  value = module.external_secrets_role.iam_role_arn
 }
 
 output "backend_ecr_repository_url" {
