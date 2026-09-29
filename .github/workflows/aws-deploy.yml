@@ -142,7 +142,7 @@ jobs:
           bundle="$(mktemp)"
           trap 'rm -f "$bundle"' EXIT
           curl --fail --silent --show-error --location \
-            https://truststore.pki.rds.amazonaws.com/ap-southeast-1/ap-southeast-1-bundle.pem \
+            https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
             --output "$bundle"
           kubectl create configmap aws-rds-ca --namespace myapp \
             --from-file=rds-ca.pem="$bundle" \
