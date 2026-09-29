@@ -142,7 +142,7 @@ jobs:
           bundle="$(mktemp)"
           trap 'rm -f "$bundle"' EXIT
           curl --fail --silent --show-error --location \
-            https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem \
+            "https://truststore.pki.rds.amazonaws.com/${AWS_REGION}/${AWS_REGION}-bundle.pem" \
             --output "$bundle"
           kubectl create configmap aws-rds-ca --namespace myapp \
             --from-file=rds-ca.pem="$bundle" \
@@ -152,7 +152,7 @@ jobs:
         shell: bash
         run: |
           set -Eeuo pipefail
-          helm upgrade --install myapp ./aws/charts/myapp --namespace myapp --create-namespace \
+          helm upgrade --install myapp ./aws/charts/myapp --namespace myapp --create-namespace --atomic \
             --set-string backend.image.repository="$BACKEND_IMAGE" \
             --set-string backend.image.tag="$IMAGE_TAG" \
             --set-string frontend.image.repository="$FRONTEND_IMAGE" \
